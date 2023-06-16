@@ -1,18 +1,34 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+
+  <router-link to="/InitDeal">
+    <el-button v-if="isPlay" type="primary" @click="checkPlay">开始</el-button>
+  </router-link>
+
+  <router-view/>
+
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+//import HelloWorld from './components/HelloWorld.vue'
 
 export default {
   name: 'App',
+  data () {
+    return {
+      isPlay: true
+    }
+  },
+  methods: {
+    checkPlay() {
+      this.isPlay = false;
+    }
+  },
   components: {
-    HelloWorld
+    //HelloWorld
   }
 }
 </script>
+
 
 <style>
 #app {
