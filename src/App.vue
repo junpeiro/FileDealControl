@@ -1,7 +1,7 @@
 <template>
 
   <router-link to="/InitDeal">
-    <el-button v-if="isPlay" type="primary" @click="checkPlay">开始</el-button>
+<!--    <el-button v-if="isPlay" type="primary" @click="checkPlay">开始</el-button>-->
   </router-link>
 
   <router-view/>

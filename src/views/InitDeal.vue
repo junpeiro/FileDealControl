@@ -1,15 +1,15 @@
 <template>
   <div id="InitDeal">
-    <el-row >
-      <el-col span="10" v-if="!isDiskCheck">
+    <el-row  :gutter="20" >
+      <el-col  v-if="!isDiskCheck">
         <el-button type="primary" @click="scanDisk">获取硬盘信息</el-button>
       </el-col>
-      <el-col span="10" v-if="isDiskCheck">
-        <el-select v-model="diskPath" placeholder="请选择硬盘" @change="getDiskInfo" >
+      <el-col v-if="isDiskCheck">
+        <el-select style="width: 300px; margin-right: 16px; vertical-align: middle" v-model="diskPath" placeholder="请选择硬盘" @change="getDiskInfo" >
           <el-option v-for="item in options" :key="item.label" :label="item.label" :value="item.value">
           </el-option>
         </el-select>
-        <el-input v-model="keyWord" placeholder="文件关键字" ></el-input>
+        <el-input :span="8" style="width: 300px; margin-right: 16px; vertical-align: middle" v-model="keyWord" placeholder="文件关键字" ></el-input>
         <el-button type="primary" @click="findAllByDiskNm">查询</el-button>
       </el-col>
     </el-row>
@@ -30,11 +30,13 @@
         <el-table-column label="操作">
           <template #default="scope">
             <el-button
-                size="mini"
+                size="small"
+                v-loading="openFileLoading"
                 @click="handleOpen(scope.$index, scope.row)">打开</el-button>
             <el-button
-                size="mini"
+                size="small"
                 type="danger"
+                v-loading="delFileLoading"
                 @click="handleDelete(scope.$index, scope.row)">删除</el-button>
           </template>
         </el-table-column>
@@ -62,6 +64,8 @@ export default {
       currentPage: 1,
       total: 10,
       listLoading: false,
+      openFileLoading: false,
+      delFileLoading: false,
       diskPath: null,
       diskName: null,
       keyWord: null,
@@ -74,6 +78,25 @@ export default {
   methods: {
     handleOpen(index, row) {
       console.log(index, row);
+      let that = this;
+      that.openFileLoading = true;
+      request.get("/fileDeal/openFile", {
+        params: {
+          fileName: row.fileName,
+          filePath: row.filePath
+        }
+      }).then(function(response) {
+        if(response.data.code===200) {
+          that.openFileLoading = false;
+        } else {
+          that.$message({
+            type: 'warning',
+            message: response.data.msg
+          });
+        }
+      }).catch(function(response) {
+        console.error(response);
+      });
     },
     handleDelete(index, row) {
       console.log(index, row);
@@ -83,7 +106,6 @@ export default {
       request.get("/fileDeal/scanDisk", {
         params: ''
       }).then(function(response) {
-        console.log(response.data);
         that.options = response.data;
         that.isDiskCheck = true;
       }).catch(function(response) {
@@ -91,11 +113,9 @@ export default {
       });
     },
     getDiskInfo(val) {
-      console.log(val);
-      console.log(this.diskPath);
       let opt= {};
       opt = this.options.find((item)=>{
-        return item.value = val;
+        return item.value === val;
       })
       this.diskName = opt.label;
     },
@@ -108,17 +128,16 @@ export default {
         pageNum: this.currentPage,
         pageSize: 10
       };
-      if (this.diskName && this.diskName.trim() != "") {
+      if (this.diskName && this.diskName.trim() !== "") {
         params_['diskName'] = this.diskName;
       }
-      if (this.keyWord && this.keyWord.trim() != "") {
+      if (this.keyWord && this.keyWord.trim() !== "") {
         params_['keyWord'] = this.keyWord;
       }
       let that = this;
       request.get("/fileDeal/findAllByDiskNm", {
         params: params_
       }).then(function(response) {
-        console.log(response.data);
         that.total = response.data.count;
         that.tableData = response.data.list;
       }).catch(function(response) {
@@ -147,7 +166,7 @@ export default {
           params_
         }).then(function(response) {
           loading.close();
-          if(response.code===200) {
+          if(response.data.code===200) {
             that.$alert('扫描完成', '提示', {
               confirmButtonText: '确定',
               callback: () => {
@@ -191,7 +210,7 @@ export default {
     },
     formatSex: function(row) {
       if (row.sex != null) {
-        return row.sex == 1 ? '男' : '女';
+        return row.sex === 1 ? '男' : '女';
       }
     }
   }
