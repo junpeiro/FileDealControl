@@ -40,12 +40,11 @@
                 @click="handleDelete(scope.$index, scope.row)">删除</el-button>
           </template>
         </el-table-column>
-        <el-table-column prop="sex" label="性别" :formatter="formatSex"></el-table-column>
         <el-table-column prop="createTime.time" label="创建时间" sortable :formatter="formatCreateDate">
         </el-table-column>
       </el-table>
       <el-col class="toolbar" style="padding:10px;">
-        <el-pagination @current-change="findAllByDiskNm" :current-page="currentPage" :page-size="10"
+        <el-pagination @current-change="findAllByDiskNm" :current-page="currentPage" :page-size="30"
                        layout="total, prev, pager, next, jumper" :total="total" style="float:right"></el-pagination>
       </el-col>
     </div>
@@ -77,17 +76,18 @@ export default {
   },
   methods: {
     handleOpen(index, row) {
-      console.log(index, row);
       let that = this;
       that.openFileLoading = true;
       request.get("/fileDeal/openFile", {
         params: {
           fileName: row.fileName,
-          filePath: row.filePath
+          filePath: row.filePath,
+          filePw: row.filePw
         }
       }).then(function(response) {
         if(response.data.code===200) {
           that.openFileLoading = false;
+          that.findAllByDiskNm();
         } else {
           that.$message({
             type: 'warning',
@@ -99,7 +99,26 @@ export default {
       });
     },
     handleDelete(index, row) {
-      console.log(index, row);
+      let that = this;
+      that.delFileLoading = true;
+      request.get("/fileDeal/deleteFile", {
+        params: {
+          fileName: row.fileName,
+          filePath: row.filePath
+        }
+      }).then(function(response) {
+        if(response.data.code===200) {
+          that.delFileLoading = false;
+          that.findAllByDiskNm();
+        } else {
+          that.$message({
+            type: 'warning',
+            message: response.data.msg
+          });
+        }
+      }).catch(function(response) {
+        console.error(response);
+      });
     },
     scanDisk() {
       let that = this;
