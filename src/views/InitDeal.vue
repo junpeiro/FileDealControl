@@ -104,7 +104,8 @@ export default {
       request.get("/fileDeal/deleteFile", {
         params: {
           fileName: row.fileName,
-          filePath: row.filePath
+          filePath: row.filePath,
+          fileId: row.fileId
         }
       }).then(function(response) {
         if(response.data.code===200) {
